@@ -1,6 +1,12 @@
 import json
 import os
 import re as regex
+
+regex_valid_location = "^.+material.+$" #r"(\w+)\s*=\s*\{([^}]+)\}"
+regex_location_name = "^\\w+"
+regex_location_params = "(\w+)\s*=\s*([\w\d.]+)"
+locations_objects = []
+
 class Location:
     def __init__(self,name,topography,vegetation,climate,religion,raw_material,culture=None,natural_harbor_suitability = 0, modifier = None):
         self.name = name
@@ -16,22 +22,45 @@ class Location:
     def to_dict(self):
         return self.__dict__
 
-regex_valid_location = "^.+material.+$" #r"(\w+)\s*=\s*\{([^}]+)\}"
-regex_location_name = "^\\w+"
-regex_location_params = "(\w+)\s*=\s*([\w\d.]+)"
+def get_valid_locations():
+    with open("location_templates.txt") as f:
+        locations = [line for line in f if regex.findall(regex_valid_location, line)]
+    return locations
 
-with open("location_templates.txt") as f:
-    valid_locations = [line for line in f if regex.findall(regex_valid_location, line)]
+def format_location_name(name):
+    return name.replace("_"," ").title() # Replacing lower
 
-locations_objects = []
+def gather_location_params(locations):
+    for location in locations:
+        name = regex.search(regex_location_name, location).group()
+        name = format_location_name(name)
+        print(name)
+        params = dict(regex.findall(regex_location_params,location))
+        locations_objects.append(Location(name=name, **params))
+    # return locations_objects
 
-for location in valid_locations:
-    name = regex.findall(regex_location_name, location)
-    params = dict(regex.findall(regex_location_params,location))
-    locations_objects.append(Location(name=name, **params))
+def write_locations_to_json(locations):
+    with open("locations.json", "w") as f:
+        f.write(json.dumps([location.to_dict() for location in locations]))
 
+gather_location_params(get_valid_locations())
 if os.path.exists("locations.json"):
     os.remove("locations.json")
+write_locations_to_json(locations_objects)
+#-----------------------------------------------------------------------------------------------------------
 
-with open("locations.json", "w") as f:
-        f.write(json.dumps([location.to_dict() for location in locations_objects]))
+# with open("location_templates.txt") as f:
+#     valid_locations = [line for line in f if regex.findall(regex_valid_location, line)]
+#
+# for location in valid_locations:
+#     location_name = regex.search(regex_location_name, location).group()
+#     location_name = location_name.replace("_"," ")
+#     print(location_name)
+#     params = dict(regex.findall(regex_location_params,location))
+#     locations_objects.append(Location(name=location_name, **params))
+#
+# if os.path.exists("locations.json"):
+#     os.remove("locations.json")
+#
+# with open("locations.json", "w") as f:
+#         f.write(json.dumps([location.to_dict() for location in locations_objects]))
