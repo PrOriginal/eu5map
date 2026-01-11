@@ -1,5 +1,6 @@
 import json
 import re as regex
+import os
 
 REGEX_VALID_LOCATION = r"^.+material.+$"
 REGEX_LOCATION_NAME = r"^\w+"
@@ -42,10 +43,17 @@ def gather_location_params(locations):
         locations_objects.append(Location(name=name, **params))
     return locations_objects
 
-def write_locations_to_json(locations, file_name):
-    with open(file_name, "w") as f:
+def get_path(filename):
+    #Get path to the parser.py
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    #Go up (to the root of the project) and go to resources
+    json_output_path = os.path.join(script_dir, "..", "src", "main", "resources", "tempDB", filename)
+    return json_output_path
+
+def write_locations_to_json(locations, path):
+    with open(path, "w") as f:
         f.write(json.dumps([location.to_dict() for location in locations], indent=2, ensure_ascii=False))
-        print(f"Data successfully saved to {file_name}")
+        print(f"Data successfully saved to {path}")
 
 def main():
     try:
@@ -58,7 +66,8 @@ def main():
         print(f"Successfully created {len(locations_obj)} 'Location' objects")
 
         print("Saving to JSON...")
-        write_locations_to_json(locations_obj, ORGANIZED_DATA)
+        file_path = get_path(ORGANIZED_DATA)
+        write_locations_to_json(locations_obj, file_path)
 
     except Exception as e:
         print(f"Unexpected error: {e}")
