@@ -53,7 +53,6 @@ def get_path(filename):
 def write_locations_to_json(locations, path):
     with open(path, "w") as f:
         f.write(json.dumps([location.to_dict() for location in locations], indent=2, ensure_ascii=False))
-        print(f"Data successfully saved to {path}")
 
 def main():
     try:
@@ -68,6 +67,7 @@ def main():
         print("Saving to JSON...")
         file_path = get_path(ORGANIZED_DATA)
         write_locations_to_json(locations_obj, file_path)
+        print(f"Data successfully saved to {file_path}")
 
     except Exception as e:
         print(f"Unexpected error: {e}")
